@@ -22,33 +22,31 @@
 # OUTPUT: a sequence of prefix indices that sort arr
 def pr_general_sort(arr: list[int]) -> list[int]:
     """
-    Sort any array using the pancake sort algorithm.
-    
-    Strategy: Find the largest unsorted element, flip it to the front,
-    then flip it to its correct position. Repeat for remaining elements.
+    Optimized general sort with better skipping logic.
     """
     reversals = []
     work_arr = arr.copy()
     n = len(work_arr)
     
-    # Process array from largest to smallest position
     for curr_size in range(n, 1, -1):
-        # Find index of maximum element in unsorted portion
+        # Find maximum in unsorted portion
         max_idx = 0
-        for i in range(curr_size):
-            if work_arr[i] > work_arr[max_idx]:
+        max_val = work_arr[0]
+        
+        for i in range(1, curr_size):
+            if work_arr[i] > max_val:
+                max_val = work_arr[i]
                 max_idx = i
         
-        # If max is already in correct position, skip
+        # Skip if already in correct position
         if max_idx == curr_size - 1:
             continue
-            
-        # Step 1: Flip max element to front (if not already there)
-        if max_idx != 0:
+        
+        # Two-flip technique
+        if max_idx > 0:
             reversals.append(max_idx)
             work_arr = work_arr[:max_idx+1][::-1] + work_arr[max_idx+1:]
         
-        # Step 2: Flip max element to its correct position
         reversals.append(curr_size - 1)
         work_arr = work_arr[:curr_size][::-1] + work_arr[curr_size:]
     
@@ -73,43 +71,34 @@ def pr_tritonic_sort(arr: list[int]) -> list[int]:
 # OUTPUT: a sequence of prefix that sort arr
 def pr_binary_sort(arr: list[int]) -> list[int]:
     """
-    Sort a binary array using pancake sort adapted for binary values.
-    
-    Strategy: Move largest values (1s) to their correct positions.
-    Since we only have 0s and 1s, we sort by moving 1s to the back.
+    Optimized binary sort - search backwards for closest elements.
     """
     reversals = []
     work_arr = arr.copy()
     n = len(work_arr)
-    
-    # Count how many 1s there are - they go at the end
     num_ones = work_arr.count(1)
     
-    # We need to place 1s in positions from (n - num_ones) to (n-1)
-    # Work backwards from the last position
+    # Place 1s at the end, working backwards
     for curr_pos in range(n - 1, n - num_ones - 1, -1):
-        # If this position already has a 1, skip it
+        # Skip if already has a 1
         if work_arr[curr_pos] == 1:
             continue
         
-        # Find a 1 before curr_pos
+        # Search BACKWARDS for the closest 1
         one_idx = -1
-        for i in range(curr_pos):
+        for i in range(curr_pos - 1, -1, -1):  # KEY CHANGE: backwards search
             if work_arr[i] == 1:
                 one_idx = i
                 break
         
         if one_idx == -1:
-            # No more 1s to move
             break
         
-        # Move this 1 to curr_pos using two flips
-        # First flip: bring 1 to position 0
+        # Two-flip technique
         if one_idx > 0:
             reversals.append(one_idx)
             work_arr = work_arr[:one_idx+1][::-1] + work_arr[one_idx+1:]
         
-        # Second flip: move 1 from position 0 to curr_pos
         reversals.append(curr_pos)
         work_arr = work_arr[:curr_pos+1][::-1] + work_arr[curr_pos+1:]
     
@@ -121,27 +110,22 @@ def pr_binary_sort(arr: list[int]) -> list[int]:
 # OUTPUT: a sequence of prefix indices that sort arr
 def pr_ternary_sort(arr: list[int]) -> list[int]:
     """
-    Sort a ternary array using modified pancake sort.
-    
-    Strategy: First place all 2s at the back, then place all 1s in the middle.
-    0s naturally end up at the front.
+    Optimized ternary sort - search backwards for closest elements.
     """
     reversals = []
     work_arr = arr.copy()
     n = len(work_arr)
-    
-    # Count each value
     num_twos = work_arr.count(2)
     num_ones = work_arr.count(1)
     
-    # Phase 1: Place all 2s at the end (positions n-num_twos to n-1)
+    # Phase 1: Place all 2s at the end
     for curr_pos in range(n - 1, n - num_twos - 1, -1):
         if work_arr[curr_pos] == 2:
             continue
         
-        # Find a 2 before curr_pos
+        # Search BACKWARDS for closest 2
         two_idx = -1
-        for i in range(curr_pos):
+        for i in range(curr_pos - 1, -1, -1):  # KEY CHANGE: backwards
             if work_arr[i] == 2:
                 two_idx = i
                 break
@@ -149,7 +133,6 @@ def pr_ternary_sort(arr: list[int]) -> list[int]:
         if two_idx == -1:
             break
         
-        # Move this 2 to curr_pos
         if two_idx > 0:
             reversals.append(two_idx)
             work_arr = work_arr[:two_idx+1][::-1] + work_arr[two_idx+1:]
@@ -157,14 +140,14 @@ def pr_ternary_sort(arr: list[int]) -> list[int]:
         reversals.append(curr_pos)
         work_arr = work_arr[:curr_pos+1][::-1] + work_arr[curr_pos+1:]
     
-    # Phase 2: Place all 1s in the middle (positions n-num_twos-num_ones to n-num_twos-1)
+    # Phase 2: Place all 1s in the middle
     for curr_pos in range(n - num_twos - 1, n - num_twos - num_ones - 1, -1):
         if work_arr[curr_pos] == 1:
             continue
         
-        # Find a 1 before curr_pos
+        # Search BACKWARDS for closest 1
         one_idx = -1
-        for i in range(curr_pos):
+        for i in range(curr_pos - 1, -1, -1):  # KEY CHANGE: backwards
             if work_arr[i] == 1:
                 one_idx = i
                 break
@@ -172,7 +155,6 @@ def pr_ternary_sort(arr: list[int]) -> list[int]:
         if one_idx == -1:
             break
         
-        # Move this 1 to curr_pos
         if one_idx > 0:
             reversals.append(one_idx)
             work_arr = work_arr[:one_idx+1][::-1] + work_arr[one_idx+1:]
