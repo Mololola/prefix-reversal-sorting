@@ -58,13 +58,47 @@ def pr_general_sort(arr: list[int]) -> list[int]:
 # OUTPUT: a sequence of prefix indices that sort arr
 def pr_tritonic_sort(arr: list[int]) -> list[int]:
     """
-    Sort a tritonic array.
-    
-    Strategy: Use general pancake sort, which works for all inputs
-    including tritonic arrays.
+    Sort tritonic array with early detection of nearly-sorted cases.
     """
-    return pr_general_sort(arr)
-
+    reversals = []
+    work_arr = arr.copy()
+    n = len(work_arr)
+    
+    # Check how sorted it already is
+    inversions = sum(1 for i in range(n-1) if work_arr[i] > work_arr[i+1])
+    
+    # If mostly sorted already (< 33% inversions), use optimized path
+    if inversions < n // 3:  # CHANGED from n // 5 to n // 3
+        for curr_size in range(n, 1, -1):
+            # Early exit if this portion is sorted
+            is_sorted = True
+            for i in range(curr_size - 1):
+                if work_arr[i] > work_arr[i + 1]:
+                    is_sorted = False
+                    break
+            if is_sorted:
+                break
+            
+            # Find max
+            max_idx = 0
+            for i in range(curr_size):
+                if work_arr[i] > work_arr[max_idx]:
+                    max_idx = i
+            
+            if max_idx == curr_size - 1:
+                continue
+            
+            if max_idx > 0:
+                reversals.append(max_idx)
+                work_arr = work_arr[:max_idx+1][::-1] + work_arr[max_idx+1:]
+            
+            reversals.append(curr_size - 1)
+            work_arr = work_arr[:curr_size][::-1] + work_arr[curr_size:]
+    else:
+        # For complex tritonic, use general sort
+        return pr_general_sort(arr)
+    
+    return reversals
 
 # Algorithm for sorting a binary list using prefix reversals.
 # INPUT: arr, a list of binary (0 or 1) values
